@@ -1,0 +1,130 @@
+﻿@{
+    ViewData["Title"] = "Leave";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@model List<LeaveViewModel>
+
+<div class="text-leave">
+    <h1 class="display-4">Leave</h1>
+    <span>All fields are mandatory.</span>
+    <form id="leaveForm">
+        <select name="SelectedLeaveType" id="SelectedLeaveType" required>
+            <option value="Select Leave Type">Select Leave Type</option>
+            @foreach (var leaveType in ViewBag.LeaveTypes)
+            {
+                <option value="@leaveType">@leaveType</option>
+            }
+        </select>
+        <input type="text" name="FirstName" id="FirstName" placeholder="First name" required />
+
+        <input type="text" name="LastName" id="LastName" placeholder="Last name" required />
+        
+        <input type="text" name="Email" id="Email" placeholder="Employee Email" required />
+        
+        <input type="datetime-local" name="StartDate" id="StartDate" placeholder="Start date" required />
+
+        <input type="datetime-local" name="EndDate" id="EndDate" placeholder="End date" required />
+        
+        <button type="button" onclick="submitLeaveRequest()">Submit</button>
+    </form>
+</div>
+
+<div id="LeaveRequestsListPlaceholder">
+    @Html.Partial("_LeaveRequestsPartial", Model)
+</div>
+
+@section scripts
+{
+<script>
+    function submitLeaveRequest() {
+        
+        var formData = {
+            LeaveType: $('#SelectedLeaveType').val(),
+            FirstName: $('#FirstName').val(),
+            LastName: $('#LastName').val(),
+            Email: $('#Email').val(),
+            StartDate: $('#StartDate').val(),
+            EndDate: $('#EndDate').val()
+        };
+
+        if ($('#SelectedLeaveType').val() == "Select Leave Type") {
+            alert("Select Leave Type");
+            $('#SelectedLeaveType').focus();
+            return false;
+        }
+
+        if ($('#FirstName').val().trim() == "") {
+            alert("First name can not be empty");
+            $('#FirstName').focus();
+            return false;
+        }
+        
+        if ($('#LastName').val().trim() == "") {
+            alert("Last name can not be empty");
+            $('#LastName').focus();
+            return false;
+        }
+        
+        if ($('#Email').val().trim() == "") {
+            alert("Email can not be empty");
+            $('#Email').focus();
+            return false;
+        }
+        
+        if ($('#StartDate').val().trim() == "") {
+            alert("Start date can not be empty");
+            $('#StartDate').focus();
+            return false;
+        }
+        
+        if ($('#EndDate').val().trim() == "") {
+            alert("End date can not be empty");
+            $('#EndDate').focus();
+            return false;
+        }
+
+        if ($('#StartDate').val() > $('#EndDate').val()) {
+            alert("Start date can not be greater than end date");
+            $('#EndDate').focus();
+            return false;
+        }
+        
+        $.ajax({
+            type: 'POST',
+            url: '@Url.Action("ValidateEmail", "Leave")',
+            data: { email: $('#Email').val().trim() },
+            success: function (response) {
+                if (response.valid) {
+                    // Email is valid, proceed with submitting the holiday request
+                    $.ajax({
+                        type: 'POST',
+                        url: '@Url.Action("SubmitLeaveRequest", "Leave")',
+                        data: formData,
+                        success: function (result) {
+                            $("#LeaveRequestsListPlaceholder").html(result);
+
+                            $('#SelectedLeaveType').val("Select Leave Type"),
+                            $('#FirstName').val(""),
+                            $('#LastName').val(""),
+                            $('#Email').val(""),
+                            $('#StartDate').val(""),
+                            $('#EndDate').val("")
+                        },
+                        error: function () {
+                            alert('Error while submitting holiday request');
+                        }
+                    });
+                } else {
+                    alert(response.message);
+                    $('#Email').focus();
+                }
+            },
+            error: function () {
+                alert('Error while validating email');
+            }
+        });
+      
+    }
+</script>
+}

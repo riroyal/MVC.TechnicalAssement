@@ -1,0 +1,27 @@
+﻿@model List<LeaveViewModel>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>LeaveType</th>
+            <th>First name</th>
+            <th>Last name</th>
+            <th>Email</th>
+            <th>Start Date</th>
+            <th>End Date</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var leaveRequest in Model)
+        {
+            <tr>
+                <td>@leaveRequest.LeaveType</td>
+                <td>@leaveRequest.FirstName</td>
+                <td>@leaveRequest.LastName</td>
+                <td>@leaveRequest.Email</td>
+                <td>@leaveRequest.StartDate</td>
+                <td>@leaveRequest.EndDate</td>
+            </tr>
+        }
+    </tbody>
+</table>
